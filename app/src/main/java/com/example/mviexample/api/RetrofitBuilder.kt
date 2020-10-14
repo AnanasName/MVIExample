@@ -1,22 +1,24 @@
 package com.example.mviexample.api
 
+import com.example.mviexample.util.LiveDataCallAdapterFactory
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-object RetrofitBuilder{
+object RetrofitBuilder {
 
-    const val BASE_URL = "https://open-api.xyz/"
+    const val BASE_URL: String = "https://open-api.xyz/"
 
-    val retrofitBuilder: Retrofit.Builder by lazy{
+    val retrofitBuilder: Retrofit.Builder by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
+            .addCallAdapterFactory(LiveDataCallAdapterFactory())
             .addConverterFactory(GsonConverterFactory.create())
     }
 
-    val api: ApiService by lazy{
+
+    val apiService: ApiService by lazy{
         retrofitBuilder
             .build()
             .create(ApiService::class.java)
     }
-
 }

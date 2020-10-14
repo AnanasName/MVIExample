@@ -6,9 +6,11 @@ import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import com.example.mviexample.model.BlogPost
 import com.example.mviexample.model.User
+import com.example.mviexample.repository.Repository
 import com.example.mviexample.ui.main.state.MainStateEvent
 import com.example.mviexample.ui.main.state.MainViewState
 import com.example.mviexample.util.AbsentLiveData
+import com.example.mviexample.util.DataState
 
 class MainViewModel : ViewModel(){
 
@@ -18,25 +20,24 @@ class MainViewModel : ViewModel(){
     val viewState: LiveData<MainViewState>
         get() = _viewState
 
-    val dataState: LiveData<MainViewState> = Transformations
-        .switchMap(_stateEvent){ stateEvent ->
 
+    val dataState: LiveData<DataState<MainViewState>> = Transformations
+        .switchMap(_stateEvent){stateEvent ->
             stateEvent?.let {
-                handleStateEvent(it)
+                handleStateEvent(stateEvent)
             }
-
         }
 
-    fun handleStateEvent(stateEvent: MainStateEvent): LiveData<MainViewState>{
-
+    fun handleStateEvent(stateEvent: MainStateEvent): LiveData<DataState<MainViewState>>{
+        println("DEBUG: New StateEvent detected: $stateEvent")
         when(stateEvent){
 
-            is MainStateEvent.GetBlogPostsEvent ->{
-                return AbsentLiveData.create()
+            is MainStateEvent.GetBlogPostsEvent -> {
+                return Repository.getBlogPosts()
             }
 
-            is MainStateEvent.GetUserEvent ->{
-                return AbsentLiveData.create()
+            is MainStateEvent.GetUserEvent -> {
+                return Repository.getUser(stateEvent.userId)
             }
 
             is MainStateEvent.None ->{
@@ -57,14 +58,16 @@ class MainViewModel : ViewModel(){
         _viewState.value = update
     }
 
-    fun getCurrentViewStateOrNew(): MainViewState{
-        val value = viewState.value?.let {
+    fun getCurrentViewStateOrNew(): MainViewState {
+        val value = viewState.value?.let{
             it
         }?: MainViewState()
         return value
     }
 
     fun setStateEvent(event: MainStateEvent){
-        _stateEvent.value = event
+        val state: MainStateEvent
+        state = event
+        _stateEvent.value = state
     }
 }
